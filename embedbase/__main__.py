@@ -1,9 +1,16 @@
+"""
+A simple example to try a local and privacy-first embedbase.
+"""
+
+from typing import List, Union
 import uvicorn
 from embedbase import get_app
+from embedbase.database.memory_db import MemoryDatabase
 from embedbase.embedding.base import Embedder
 from sentence_transformers import SentenceTransformer
-from embedbase.database.qdrant_db import Qdrant
 
+
+# pylint: disable=missing-class-docstring
 class LocalEmbedder(Embedder):
     EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
@@ -29,17 +36,23 @@ class LocalEmbedder(Embedder):
         """
         return len(text) > self.model.get_max_seq_length()
 
-    async def embed(self, data):
+    async def embed(self, data: Union[List[str], str]) -> List[List[float]]:
         """
-        Embed a list of strings or a single string
-        :param data: list of strings or a single string
+        Embed a list of texts
+        :param texts: list of texts
         :return: list of embeddings
         """
         embeddings = self.model.encode(data)
         return embeddings.tolist() if isinstance(data, list) else [embeddings.tolist()]
 
 
-app = get_app().use_embedder(LocalEmbedder()).use_db(Qdrant(dimensions=384)).run()
+app = get_app().use_db(MemoryDatabase()).use_embedder(LocalEmbedder()).run()
+
+
+# pylint: disable=missing-function-docstring
+def run_app():
+    uvicorn.run(app, host="0.0.0.0")
+
 
 if __name__ == "__main__":
-    uvicorn.run(app)
+    run_app()
