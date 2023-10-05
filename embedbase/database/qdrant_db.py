@@ -65,7 +65,7 @@ class Qdrant(VectorDatabase):
             return func(**kwargs)
 
     def __init__(
-        self, host: str = "localhost", port: int = 6333,
+        self, host: str = None, port: int = 6333,
         url: Optional[str] = None, api_key: Optional[str] = None,
         **kwargs
     ):
