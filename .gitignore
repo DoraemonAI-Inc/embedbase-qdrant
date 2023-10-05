@@ -162,3 +162,6 @@ cython_debug/
 
 # qdrant
 qdrant_storage
+
+# secrets config file
+**/config.yaml
