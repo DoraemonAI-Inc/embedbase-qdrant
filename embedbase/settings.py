@@ -38,6 +38,10 @@ class Settings(BaseModel):
     supabase_url: typing.Optional[str] = None
     supabase_key: typing.Optional[str] = None
 
+    # qdrant settings
+    qdrant_url: typing.Optional[str] = None
+    qdrant_api_key: typing.Optional[str] = None
+
     # logging settings
     log_level: str = "INFO"
     auth: typing.Optional[str] = None
