@@ -64,7 +64,11 @@ class Qdrant(VectorDatabase):
             self._collections.add(dataset_id)
             return func(**kwargs)
 
-    def __init__(self, host: str = "localhost", port: int = 6333, **kwargs):
+    def __init__(
+        self, host: str = "localhost", port: int = 6333,
+        url: Optional[str] = None, api_key: Optional[str] = None,
+        **kwargs
+    ):
         """
 
         :param host: qdrant host
@@ -73,7 +77,7 @@ class Qdrant(VectorDatabase):
 
         super().__init__(**kwargs)
 
-        self.client = QdrantClient(host=host, port=port)
+        self.client = QdrantClient(host=host, port=port, url=url, api_key=api_key)
         self._collections = set()
         cols = self.client.get_collections().collections
         for col in cols:
