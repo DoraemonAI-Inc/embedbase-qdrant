@@ -17,7 +17,13 @@ from qdrant_client.http.models import (
 )
 from qdrant_client.http.exceptions import UnexpectedResponse
 import itertools
-from embedbase.database.base import SearchResponse, SelectResponse, Dataset
+from embedbase.database.base import (
+    Dataset,
+    SearchResponse,
+    SelectResponse,
+    WhereResponse,
+)
+from embedbase.models import Document
 from typing import Callable, TypeVar
 
 T = TypeVar("T")
@@ -130,11 +136,13 @@ class Qdrant(VectorDatabase):
         should = []
         if user_id:
             must.append(
-                FieldCondition(key="user_id", range=MatchValue(value="user_id"))
+                FieldCondition(
+                    key="user_id", range=MatchValue(value="user_id"))
             )
         if hashes:
             for h in hashes:
-                should.append(FieldCondition(key="hash", match=MatchValue(value=h)))
+                should.append(FieldCondition(
+                    key="hash", match=MatchValue(value=h)))
         if ids:
             should.append(HasIdCondition(has_id=ids))
 
@@ -154,7 +162,8 @@ class Qdrant(VectorDatabase):
                 if ids:
                     scroll_results = {e.id: e for e in scroll_results}
                 elif hashes:
-                    scroll_results = {e.payload["hash"]: e for e in scroll_results}
+                    scroll_results = {
+                        e.payload["hash"]: e for e in scroll_results}
                 scroll_results = list(scroll_results.values())
         except UnexpectedResponse as exc:
             # ignore unexisting collections
@@ -222,7 +231,8 @@ class Qdrant(VectorDatabase):
         ]
         if user_id:
             must.append(
-                FieldCondition(key="user_id", range=MatchValue(value="user_id"))
+                FieldCondition(
+                    key="user_id", range=MatchValue(value="user_id"))
             )
         try:
             self.client.delete(
@@ -248,11 +258,13 @@ class Qdrant(VectorDatabase):
         where: Optional[Union[dict, List[dict]]] = None,
     ):
         if where:
-            raise NotImplementedError("where is not implemented yet in embedbase-qdrant")
+            raise NotImplementedError(
+                "where is not implemented yet in embedbase-qdrant")
         must = []
         if user_id:
             must.append(
-                FieldCondition(key="user_id", range=MatchValue(value="user_id"))
+                FieldCondition(
+                    key="user_id", range=MatchValue(value="user_id"))
             )
         try:
             search_result = self.client.search(
@@ -293,7 +305,8 @@ class Qdrant(VectorDatabase):
         must = []
         if user_id:
             must.append(
-                FieldCondition(key="user_id", range=MatchValue(value="user_id"))
+                FieldCondition(
+                    key="user_id", range=MatchValue(value="user_id"))
             )
         try:
             self.client.delete(
@@ -314,7 +327,8 @@ class Qdrant(VectorDatabase):
         must = []
         if user_id:
             must.append(
-                FieldCondition(key="user_id", range=MatchValue(value="user_id"))
+                FieldCondition(
+                    key="user_id", range=MatchValue(value="user_id"))
             )
         result = self.client.get_collections()
         response = []
@@ -333,3 +347,26 @@ class Qdrant(VectorDatabase):
                 )
             )
         return response
+
+    async def list(
+        self,
+        dataset_id: str,
+        user_id: Optional[str] = None,
+        offset: int = 0,
+        limit: int = 100,
+    ) -> List[Document]:
+        raise NotImplementedError
+
+    async def where(
+        self,
+        dataset_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        where: Optional[Union[dict, List[dict]]] = None,
+    ) -> List[WhereResponse]:
+        """
+        :param dataset_id: dataset id
+        :param user_id: user id
+        :param where: where condition to filter results
+        :return: list of documents
+        """
+        raise NotImplementedError
