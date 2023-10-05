@@ -8,6 +8,7 @@ from tenacity import (
 )
 
 from embedbase.embedding.base import Embedder
+from embedbase.settings import Settings
 
 try:
     import openai
@@ -24,6 +25,7 @@ except:
 )
 def embed_retry(
     data: List[str],
+    deployment_id: str = None,
 ) -> List[dict]:
     """
     Embed a list of sentences and retry on failure
@@ -31,12 +33,21 @@ def embed_retry(
     :param provider: which provider to use
     :return: list of embeddings
     """
-    return [
-        e["embedding"]
-        for e in openai.Embedding.create(input=data, model="text-embedding-ada-002")[
-            "data"
+    if deployment_id:
+        return [
+            e["embedding"]
+            for e in openai.Embedding.create(
+                input=data,
+                deployment=deployment_id,
+            )["data"]
         ]
-    ]
+    else:
+        return [
+            e["embedding"]
+            for e in openai.Embedding.create(input=data, model="text-embedding-ada-002")[
+                "data"
+            ]
+        ]
 
 
 class OpenAI(Embedder):
@@ -47,9 +58,10 @@ class OpenAI(Embedder):
     EMBEDDING_MODEL = "text-embedding-ada-002"
     EMBEDDING_CTX_LENGTH = 8191
     EMBEDDING_ENCODING = "cl100k_base"
+    deployment_id: Optional[str] = None
 
     def __init__(
-        self, openai_api_key: str, openai_organization: Optional[str] = None
+        self, settings: Settings
     ):
         super().__init__()
         try:
@@ -61,9 +73,18 @@ class OpenAI(Embedder):
             )
 
         self.encoding = tiktoken.get_encoding(self.EMBEDDING_ENCODING)
-        openai.api_key = openai_api_key
-        openai.organization = openai_organization
-        # openai.api_base
+        if settings.api_type == "open_ai":
+            openai.api_key = settings.openai_api_key
+            openai.organization = settings.openai_organization
+        elif settings.api_type == "azure":
+            openai.api_key = settings.azure_api_key
+            openai.api_base = settings.azure_api_base
+            openai.api_version = settings.azure_api_version
+            self.deployment_id = settings.azure_deployment_id
+        else:
+            raise ValueError(
+                f"Unknown OpenAI API type {settings.api_type}. Please set api_type to open_ai or azure, if you are using Cohere, please use the CohereEmbedder"
+            )
 
     @property
     def dimensions(self) -> int:
@@ -77,4 +98,4 @@ class OpenAI(Embedder):
         return False
 
     async def embed(self, data: Union[List[str], str]) -> List[List[float]]:
-        return embed_retry(data)
+        return embed_retry(data, self.deployment_id)

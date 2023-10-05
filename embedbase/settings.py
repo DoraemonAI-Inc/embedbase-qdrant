@@ -2,7 +2,9 @@ from enum import Enum
 from functools import lru_cache
 import typing
 import os
-from pydantic_yaml import YamlModel
+# from pydantic_yaml import YamlModel
+from pydantic import BaseModel
+from pydantic_yaml import parse_yaml_file_as
 
 
 class VectorDatabaseEnum(str, Enum):
@@ -18,12 +20,25 @@ class EmbeddingProvider(str, Enum):
     COHERE = "cohere"
 
 
-class Settings(YamlModel):
+class Settings(BaseModel):
+    # default as OpenAI, choices are open_ai, cohere or azure(Azure OpenAI API)
+    api_type: str = "open_ai"
+
+    # OpenAI api settings
     openai_api_key: typing.Optional[str] = None
     openai_organization: typing.Optional[str] = None
+
+    # Azure openai api settings
+    azure_api_key:  typing.Optional[str] = None
+    azure_api_base:  typing.Optional[str] = None
+    azure_api_version:  typing.Optional[str] = None
+    azure_deployment_id: typing.Optional[str] = None
+
+    # supabase settings
     supabase_url: typing.Optional[str] = None
     supabase_key: typing.Optional[str] = None
-    
+
+    # logging settings
     log_level: str = "INFO"
     auth: typing.Optional[str] = None
     firebase_service_account_path: typing.Optional[str] = None
@@ -33,7 +48,8 @@ def get_settings_from_file(path: str = "config.yaml"):
     """
     Read settings from a file, only supports yaml for now
     """
-    settings = Settings.parse_file(path)
+    # settings = Settings.parse_file(path)
+    settings = parse_yaml_file_as(Settings, path)
 
     # TODO: move
     # if firebase, init firebase
