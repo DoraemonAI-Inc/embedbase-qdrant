@@ -38,7 +38,7 @@ def embed_retry(
             e["embedding"]
             for e in openai.Embedding.create(
                 input=data,
-                deployment=deployment_id,
+                deployment_id=deployment_id,
             )["data"]
         ]
     else:
@@ -73,14 +73,15 @@ class OpenAI(Embedder):
             )
 
         self.encoding = tiktoken.get_encoding(self.EMBEDDING_ENCODING)
-        if settings.api_type == "open_ai":
+        if settings.api_type in ["open_ai", "OpenAI", "openai"]:
             openai.api_key = settings.openai_api_key
             openai.organization = settings.openai_organization
-        elif settings.api_type == "azure":
+        elif settings.api_type in ["azure"]:
             openai.api_key = settings.azure_api_key
             openai.api_base = settings.azure_api_base
             openai.api_version = settings.azure_api_version
             self.deployment_id = settings.azure_deployment_id
+            openai.api_type = "azure"
         else:
             raise ValueError(
                 f"Unknown OpenAI API type {settings.api_type}. Please set api_type to open_ai or azure, if you are using Cohere, please use the CohereEmbedder"
