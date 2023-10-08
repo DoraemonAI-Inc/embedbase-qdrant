@@ -25,4 +25,10 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - PORT=8000
-      - OPENAI_API_KEY=[Your OpenAI Key]
+      - API_TYPE=[Your API Type]
+      - AZURE_API_KEY=[Your OpenAI Key]
+      - AZURE_API_BASE=[Your OpenAI Base URL]
+      - AZURE_API_VERSION=[Your OpenAI Version]
+      - AZURE_DEPLOYMENT_ID=[Your OpenAI Deployment ID]
+      - QDRANT_URL=[Your Qdrant URL]
+      - QDRANT_API_KEY=[Your Qdrant API Key]
