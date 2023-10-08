@@ -14,9 +14,7 @@ services:
   
   embedbase:
     container_name: embedbase-hosted
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: takiwang/embedbase
     expose:
       - "8000"
     ports:
